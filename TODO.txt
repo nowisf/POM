@@ -1,0 +1,15 @@
+[L]Crear Contenido de Cosas
+  [L].color
+  [L].ubicacion
+    [] al cambiar una ubicacion no puede existir  algo en esa ubicacion previamente
+
+[L]Mostrar contenido de cosas con el tablero
+
+[]POP UP AGREGAR COSA
+[]POP UP configuracion tablero
+
+
+https://codesandbox.io/s/gracious-mccarthy-1tctl4?file=/src/Map.tsx:76-169
+
+
+Efectos flotantes con canvas de fondo transparente?
