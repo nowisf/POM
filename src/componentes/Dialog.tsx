@@ -4,12 +4,12 @@ function Dialog({
   isOpen,
   mensaje,
   children,
-  openButton,
+  renderButton,
 }: {
   isOpen: boolean;
   mensaje: string;
   children: ReactNode;
-  openButton: ReactNode;
+  renderButton: any;
 }) {
   const [open, setOpen] = useState(isOpen);
 
@@ -38,9 +38,11 @@ function Dialog({
         </form>
       </dialog>
 
-      {openButton ? null : (
+      {renderButton ? (
+        renderButton(invertirApertura)
+      ) : (
         <button onClick={invertirApertura}>
-          <p>{mensaje}</p>
+          <p>{mensaje ? mensaje : "abrir dialog"}</p>
         </button>
       )}
     </>

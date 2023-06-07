@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import Dialog from "./componentes/Dialog";
 
 type Coordenadas = {
@@ -29,20 +29,27 @@ export const Mapa = () => {
     for (let x = xNaNCero - anchoNaNCero; x <= xNaNCero + anchoNaNCero; x++) {
       const cosa = cosas.find((c) => c.x === x && c.y === y);
       const backgroundColor = cosa ? cosa.color : "#5A3CD6";
+
       fila.push(
         <span key={x + y}>
           <Dialog
             isOpen={false}
-            openButton={false}
+            renderButton={(onClick) => (
+              <button
+                className="cuadrado"
+                style={{ backgroundColor }}
+                onClick={onClick}
+              >
+                x:{x} y:{y}
+              </button>
+            )}
             mensaje={`Formulario para x:${x} y:${y}`}
           >
             <p>x: {x}</p>
             <p>y: {y}</p>
-            {/* Aquí puedes agregar los campos del formulario relacionados a x e y */}
+            Si esta vacia la casilla ofrecer blue prints de invocacion
+            {/*  agregar los campos del formulario relacionados a x e y */}
           </Dialog>
-          <button className="cuadrado" style={{ backgroundColor }}>
-            x:{x} y:{y}
-          </button>
         </span>
       );
     }
