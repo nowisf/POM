@@ -3,6 +3,7 @@ import "./app.css";
 
 import Dialog from "./componentes/Dialog";
 import { Mapa } from "./Map";
+import MyMultiSelect from "./componentes/Select";
 
 function App() {
   const dialogRef = useRef(null);

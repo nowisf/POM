@@ -32,10 +32,9 @@ function Dialog({
         style={{ position: "fixed", top: "20px", right: "30px" }}
       >
         <p>{mensaje}</p>
-        <form method="dialog">
-          {children}
-          <button onClick={cerrar}>OK</button>
-        </form>
+
+        {children}
+        <button onClick={cerrar}>OK</button>
       </dialog>
 
       {renderButton ? (

@@ -1,19 +1,31 @@
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, MouseEventHandler, useState } from "react";
 import Dialog from "./componentes/Dialog";
-
+import Select from "react-select";
 type Coordenadas = {
   x: number;
   y: number;
 };
 
-export type Cosas = Coordenadas & { color: string };
+const confMundo = [
+  { mundo: "pom", colorTipo: [{ Tipo: "obstaculo", color: "#FF0000" }] },
+];
+const mundoActual = "pom";
+
+const acciones = [
+  { tipo: "casilla vacia", opciones: ["invocar Test", "invocar Test2"] },
+];
+
+export type Cosas = Coordenadas & { tipo: string };
 
 export const Mapa = () => {
   const [ancho, setAncho] = useState(0);
   const [alto, setAlto] = useState(0);
   const [centro, setCentro] = useState({ x: 0, y: 0 });
+  const [cosas, setCosas] = useState<Cosas[]>([]);
 
-  const cosas: Cosas[] = [];
+  const [xCasilla, setXCasilla] = useState(0);
+  const [yCasilla, setyCasilla] = useState(0);
+  const [seleccion, setSeleccion] = useState("");
 
   const elementos = [];
 
@@ -24,39 +36,81 @@ export const Mapa = () => {
   const xNaNCero = isNaN(centro.x) ? 0 : centro.x;
   const yNaNCero = isNaN(centro.y) ? 0 : centro.y;
 
+  //Area Ejecutables TODO que se ejecuten en alguna parte del bucle temporal
+
+  const agregarCosa = ({
+    x,
+    y,
+    tipo,
+  }: {
+    x: number;
+    y: number;
+    tipo: string;
+  }) => {
+    setCosas((prevCosas) => {
+      const nuevoCosas = prevCosas.filter((c) => !(c.x === x && c.y === y));
+      return [...nuevoCosas, { x, y, tipo }];
+    });
+  };
+
   for (let y = yNaNCero + altoNaNCero; y >= yNaNCero - altoNaNCero; y--) {
     const fila = [];
     for (let x = xNaNCero - anchoNaNCero; x <= xNaNCero + anchoNaNCero; x++) {
       const cosa = cosas.find((c) => c.x === x && c.y === y);
+
+      //creo los states
+
+      // TODO color by type
       const backgroundColor = cosa ? cosa.color : "#5A3CD6";
 
       fila.push(
-        <span key={x + y}>
+        <span key={`${x}+${y}`}>
           <Dialog
             isOpen={false}
-            renderButton={(onClick) => (
-              <button
-                className="cuadrado"
-                style={{ backgroundColor }}
-                onClick={onClick}
-              >
-                x:{x} y:{y}
-              </button>
-            )}
-            mensaje={`Formulario para x:${x} y:${y}`}
+            renderButton={(
+              onClick: MouseEventHandler<HTMLButtonElement> | undefined
+            ) => {
+              return (
+                <button
+                  className="cuadrado"
+                  style={{ backgroundColor }}
+                  onClick={onClick}
+                >
+                  x:{x} y:{y}
+                </button>
+              );
+            }}
+            mensaje={"Casilla Vacia"}
           >
+            <Select
+              options={acciones
+                .filter((conAcc) => conAcc.tipo === "casilla vacia")[0]
+                .opciones.map((opcion) => {
+                  return { label: `label:${opcion}`, value: opcion };
+                })}
+              value={seleccion}
+              onChange={(event) => {
+                setSeleccion(event);
+              }}
+            />
             <p>x: {x}</p>
             <p>y: {y}</p>
-            Si esta vacia la casilla ofrecer blue prints de invocacion
-            {/*  agregar los campos del formulario relacionados a x e y */}
+            <button
+              onClick={() => {
+                setXCasilla(x);
+
+                setyCasilla(y);
+              }}
+            >
+              ejecutar
+            </button>
           </Dialog>
         </span>
       );
     }
-    fila.push(<br></br>);
+    fila.push(<br key={y}></br>);
     elementos.push(fila);
   }
-  console.log(elementos);
 
   return (
     <>
@@ -104,6 +158,25 @@ export const Mapa = () => {
           </>
         }
       </Dialog>
+      {xCasilla ? (
+        <>
+          <br />
+          x: {xCasilla}
+        </>
+      ) : null}
+
+      {yCasilla ? (
+        <>
+          <br />
+          y: {yCasilla}
+        </>
+      ) : null}
+      {seleccion ? (
+        <>
+          <br />
+          seleccion: {seleccion.value}
+        </>
+      ) : null}
     </>
   );
 };
