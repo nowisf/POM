@@ -1,17 +1,15 @@
-import { useState, ReactNode } from "react";
+import { useState, ReactNode, MouseEventHandler } from "react";
 
 function Dialog({
-  isOpen,
   mensaje,
   children,
   renderButton,
 }: {
-  isOpen: boolean;
   mensaje: string;
   children: ReactNode;
-  renderButton: any;
+  renderButton?: (event: MouseEventHandler<HTMLButtonElement>) => ReactNode;
 }) {
-  const [open, setOpen] = useState(isOpen);
+  const [open, setOpen] = useState(false);
 
   const invertirApertura = () => {
     if (open) {

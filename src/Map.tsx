@@ -1,48 +1,22 @@
-import { ChangeEvent, MouseEventHandler, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import Dialog from "./componentes/Dialog";
 import Select from "react-select";
-type Coordenadas = {
-  x: number;
-  y: number;
-};
-
-const confMundo = [
-  { mundo: "pom", colorTipo: [{ Tipo: "pared", color: "#FF0000" }] },
-];
-const mundoActual = "pom";
-
-const obtenerConfActual = () => {
-  return confMundo.filter((conf) => conf.mundo === mundoActual);
-};
-
-const acciones = [
-  { tipo: "casilla vacia", opciones: ["invocar pared", "invocar Test2"] },
-];
-
-const tipoToColor = (tipo: string) => {
-  return obtenerConfActual()[0].colorTipo.filter((ct) => ct.Tipo === tipo);
-};
-
-export type Cosas = Coordenadas & { tipo: string };
+import { ACCIONES, Accion, Coordenadas, Cosas, Tipo } from "./constants";
+import { parseLabel, tipoToColor } from "./utils";
 
 export const Mapa = () => {
-  const [ancho, setAncho] = useState(0);
-  const [alto, setAlto] = useState(0);
+  const [ancho, setAncho] = useState(2);
+  const [alto, setAlto] = useState(2);
   const [centro, setCentro] = useState({ x: 0, y: 0 });
   const [cosas, setCosas] = useState<Cosas[]>([]);
 
   //TODO cambiar por casilla {x y}
-  const [xCasilla, setXCasilla] = useState(NaN);
-  const [yCasilla, setyCasilla] = useState(NaN);
-  const [seleccion, setSeleccion] = useState({ value: "", label: "test" });
+
+  const [seleccion, setSeleccion] = useState<
+    { value: Accion; label: string } | undefined
+  >();
 
   const elementos = [];
-
-  const setXYCasilla = ({ x, y }: { x: number; y: number }) => {
-    setXCasilla(x);
-
-    setyCasilla(y);
-  };
 
   const agregarCosa = ({
     x,
@@ -51,33 +25,25 @@ export const Mapa = () => {
   }: {
     x: number;
     y: number;
-    tipo: string;
+    tipo: Tipo;
   }) => {
-    console.log("intentando agregar cosa", x, y, tipo);
+    console.log(2222222, [...cosas, { x, y, tipo }]);
+
     setCosas((prevCosas) => {
       const nuevoCosas = prevCosas.filter((c) => !(c.x === x && c.y === y));
       return [...nuevoCosas, { x, y, tipo }];
     });
-    console.log("3", cosas);
   };
 
-  const ejecutarOpcion = () => {
+  const ejecutarOpcion = ({ x, y }: Coordenadas) => {
     // TODO no hacer si tiene contenido
 
     console.log("hola", seleccion);
-    const opciones = [
-      {
-        opcion: "invocar pared",
-        fn: () => {
-          agregarCosa({ x: xCasilla, y: yCasilla, tipo: "pared" });
-        },
-      },
-    ];
 
-    const f = opciones.find((o) => {
-      return o.opcion === seleccion.value;
-    })?.fn;
-    f();
+    if (seleccion?.value === "invocar_pared") {
+      agregarCosa({ x, y, tipo: "pared" });
+      console.log("aldfkjasldfj", cosas);
+    }
   };
 
   //Transformamos aqui los NaN para permitir borrar el numero en el formulario
@@ -87,24 +53,23 @@ export const Mapa = () => {
   const xNaNCero = isNaN(centro.x) ? 0 : centro.x;
   const yNaNCero = isNaN(centro.y) ? 0 : centro.y;
 
-  console.log(obtenerConfActual());
-
   //Area Ejecutables TODO que se ejecuten en alguna parte del bucle temporal
+
+  const opcionesSelect = ACCIONES["casilla_vacia"].map((opcion) => {
+    return { label: parseLabel(opcion), value: opcion };
+  });
 
   for (let y = yNaNCero + altoNaNCero; y >= yNaNCero - altoNaNCero; y--) {
     const fila = [];
     for (let x = xNaNCero - anchoNaNCero; x <= xNaNCero + anchoNaNCero; x++) {
       const cosa = cosas.find((c) => c.x === x && c.y === y);
-      // TODO color by type
       const backgroundColor = cosa ? tipoToColor(cosa.tipo) : "#5A3CD6";
 
+      // TODO solo en caso de casilla vacia
       fila.push(
-        <span key={`${Math.random()}`}>
+        <span key={x + "+" + y}>
           <Dialog
-            isOpen={x === xCasilla && y === yCasilla}
-            renderButton={(
-              onClick: MouseEventHandler<HTMLButtonElement> | undefined
-            ) => {
+            renderButton={(onClick) => {
               return (
                 <button
                   className="cuadrado"
@@ -118,21 +83,22 @@ export const Mapa = () => {
             mensaje={"Casilla Vacia"}
           >
             <Select
-              options={acciones
-                .filter((conAcc) => conAcc.tipo === "casilla vacia")[0]
-                .opciones.map((opcion) => {
-                  return { label: `label:${opcion}`, value: opcion };
-                })}
+              options={opcionesSelect}
               value={seleccion}
               onChange={(event) => {
-                setSeleccion(event);
+                if (event) {
+                  setSeleccion({
+                    label: parseLabel(event.value),
+                    value: event.value,
+                  });
+                }
               }}
             />
             <p>x: {x}</p>
             <p>y: {y}</p>
             <button
               onClick={() => {
-                ejecutarOpcion();
+                ejecutarOpcion({ x, y });
               }}
             >
               ejecutar
@@ -148,7 +114,7 @@ export const Mapa = () => {
   return (
     <>
       {elementos}
-      <Dialog isOpen={false} mensaje="Map Config" openButton={null}>
+      <Dialog mensaje="Map Config">
         {
           <>
             <p>Ancho (*2 +1)</p>
@@ -191,25 +157,13 @@ export const Mapa = () => {
           </>
         }
       </Dialog>
-      {xCasilla ? (
-        <>
-          <br />
-          x: {xCasilla}
-        </>
-      ) : null}
 
-      {yCasilla ? (
-        <>
-          <br />
-          y: {yCasilla}
-        </>
-      ) : null}
-      {seleccion ? (
+      {seleccion && (
         <>
           <br />
           seleccion: {seleccion.value}
         </>
-      ) : null}
+      )}
     </>
   );
 };
