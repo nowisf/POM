@@ -1,4 +1,8 @@
-[L]Crear Contenido de Cosas
+[]Boton ejecutar comienza la funcion correspondiente a seleccion.value
+  []listas de ejecuciones/codigos
+[]Type => color   
+  
+  [L]Crear Contenido de Cosas
   [L].color
   [L].ubicacion
     [] al cambiar una ubicacion no puede existir  algo en esa ubicacion previamente

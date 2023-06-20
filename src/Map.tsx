@@ -7,13 +7,21 @@ type Coordenadas = {
 };
 
 const confMundo = [
-  { mundo: "pom", colorTipo: [{ Tipo: "obstaculo", color: "#FF0000" }] },
+  { mundo: "pom", colorTipo: [{ Tipo: "pared", color: "#FF0000" }] },
 ];
 const mundoActual = "pom";
 
+const obtenerConfActual = () => {
+  return confMundo.filter((conf) => conf.mundo === mundoActual);
+};
+
 const acciones = [
-  { tipo: "casilla vacia", opciones: ["invocar Test", "invocar Test2"] },
+  { tipo: "casilla vacia", opciones: ["invocar pared", "invocar Test2"] },
 ];
+
+const tipoToColor = (tipo: string) => {
+  return obtenerConfActual()[0].colorTipo.filter((ct) => ct.Tipo === tipo);
+};
 
 export type Cosas = Coordenadas & { tipo: string };
 
@@ -23,20 +31,18 @@ export const Mapa = () => {
   const [centro, setCentro] = useState({ x: 0, y: 0 });
   const [cosas, setCosas] = useState<Cosas[]>([]);
 
-  const [xCasilla, setXCasilla] = useState(0);
-  const [yCasilla, setyCasilla] = useState(0);
-  const [seleccion, setSeleccion] = useState("");
+  //TODO cambiar por casilla {x y}
+  const [xCasilla, setXCasilla] = useState(NaN);
+  const [yCasilla, setyCasilla] = useState(NaN);
+  const [seleccion, setSeleccion] = useState({ value: "", label: "test" });
 
   const elementos = [];
 
-  //Transformamos aqui los NaN para permitir borrar el numero en el formulario
+  const setXYCasilla = ({ x, y }: { x: number; y: number }) => {
+    setXCasilla(x);
 
-  const anchoNaNCero = isNaN(ancho) ? 0 : ancho;
-  const altoNaNCero = isNaN(alto) ? 0 : alto;
-  const xNaNCero = isNaN(centro.x) ? 0 : centro.x;
-  const yNaNCero = isNaN(centro.y) ? 0 : centro.y;
-
-  //Area Ejecutables TODO que se ejecuten en alguna parte del bucle temporal
+    setyCasilla(y);
+  };
 
   const agregarCosa = ({
     x,
@@ -47,26 +53,55 @@ export const Mapa = () => {
     y: number;
     tipo: string;
   }) => {
+    console.log("intentando agregar cosa", x, y, tipo);
     setCosas((prevCosas) => {
       const nuevoCosas = prevCosas.filter((c) => !(c.x === x && c.y === y));
       return [...nuevoCosas, { x, y, tipo }];
     });
+    console.log("3", cosas);
   };
+
+  const ejecutarOpcion = () => {
+    // TODO no hacer si tiene contenido
+
+    console.log("hola", seleccion);
+    const opciones = [
+      {
+        opcion: "invocar pared",
+        fn: () => {
+          agregarCosa({ x: xCasilla, y: yCasilla, tipo: "pared" });
+        },
+      },
+    ];
+
+    const f = opciones.find((o) => {
+      return o.opcion === seleccion.value;
+    })?.fn;
+    f();
+  };
+
+  //Transformamos aqui los NaN para permitir borrar el numero en el formulario
+
+  const anchoNaNCero = isNaN(ancho) ? 0 : ancho;
+  const altoNaNCero = isNaN(alto) ? 0 : alto;
+  const xNaNCero = isNaN(centro.x) ? 0 : centro.x;
+  const yNaNCero = isNaN(centro.y) ? 0 : centro.y;
+
+  console.log(obtenerConfActual());
+
+  //Area Ejecutables TODO que se ejecuten en alguna parte del bucle temporal
 
   for (let y = yNaNCero + altoNaNCero; y >= yNaNCero - altoNaNCero; y--) {
     const fila = [];
     for (let x = xNaNCero - anchoNaNCero; x <= xNaNCero + anchoNaNCero; x++) {
       const cosa = cosas.find((c) => c.x === x && c.y === y);
-
-      //creo los states
-
       // TODO color by type
-      const backgroundColor = cosa ? cosa.color : "#5A3CD6";
+      const backgroundColor = cosa ? tipoToColor(cosa.tipo) : "#5A3CD6";
 
       fila.push(
-        <span key={`${x}+${y}`}>
+        <span key={`${Math.random()}`}>
           <Dialog
-            isOpen={false}
+            isOpen={x === xCasilla && y === yCasilla}
             renderButton={(
               onClick: MouseEventHandler<HTMLButtonElement> | undefined
             ) => {
@@ -97,9 +132,7 @@ export const Mapa = () => {
             <p>y: {y}</p>
             <button
               onClick={() => {
-                setXCasilla(x);
-
-                setyCasilla(y);
+                ejecutarOpcion();
               }}
             >
               ejecutar
